@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Match Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding-top: 30px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #333;
+      color: white;
+      font-size: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 8px;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .card.revealed {
+      background: #fff;
+      color: #333;
+      border: 2px solid #333;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 Memory Match Game</h1>
+  <p>Flip and match all pairs!</p>
+
+  <div id="game"></div>
+  <div id="status">Moves: 0</div>
+  <button onclick="startGame()">Restart</button>
+
+  <script>
+    const emojis = ['🍎','🍌','🍇','🍓','🍍','🥝','🍉','🍒'];
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let moves = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startGame() {
+      const gameEl = document.getElementById("game");
+      const statusEl = document.getElementById("status");
+      gameEl.innerHTML = "";
+      moves = 0;
+      statusEl.textContent = "Moves: 0";
+      cards = [];
+
+      const shuffled = shuffle([...emojis, ...emojis]); // 16 cards
+      shuffled.forEach((emoji, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.emoji = emoji;
+        card.dataset.index = index;
+        card.addEventListener("click", handleCardClick);
+        cards.push(card);
+        gameEl.appendChild(card);
+      });
+    }
+
+    function handleCardClick(e) {
+      const card = e.currentTarget;
+      if (card.classList.contains("revealed") || secondCard) return;
+
+      card.classList.add("revealed");
+      card.textContent = card.dataset.emoji;
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        secondCard = card;
+        moves++;
+        document.getElementById("status").textContent = `Moves: ${moves}`;
+
+        if (firstCard.dataset.emoji === secondCard.dataset.emoji) {
+          firstCard = null;
+          secondCard = null;
+          checkWin();
+        } else {
+          setTimeout(() => {
+            firstCard.classList.remove("revealed");
+            secondCard.classList.remove("revealed");
+            firstCard.textContent = "";
+            secondCard.textContent = "";
+            firstCard = null;
+            secondCard = null;
+          }, 800);
+        }
+      }
+    }
+
+    function checkWin() {
+      const allRevealed = cards.every(card => card.classList.contains("revealed"));
+      if (allRevealed) {
+        document.getElementById("status").textContent = `🎉 You won in ${moves} moves!`;
+      }
+    }
+
+    startGame();
+  </script>
+
+</body>
+</html>
